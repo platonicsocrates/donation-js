@@ -1,75 +1,75 @@
 import { NearBindgen, near, call, view, initialize, UnorderedMap } from 'near-sdk-js'
 import { assert } from './utils'
-import { Donation, STORAGE_COST } from './model'
+import { Donation as Payment, STORAGE_COST } from './model'
 
 @NearBindgen({})
-class DonationContract {
-  beneficiary: string = "v1.faucet.nonofficial.testnet";
-  donations: UnorderedMap = new UnorderedMap('map-uid-1');
+class PaymentsContract {
+  recipient: string = "v1.faucet.nonofficial.testnet";
+  payments: UnorderedMap = new UnorderedMap('map-uid-1');
 
   @initialize({})
-  init({ beneficiary }:{beneficiary: string}) {
-    this.beneficiary = beneficiary
+  init({ beneficiary: recipient }:{beneficiary: string}) {
+    this.recipient = recipient
   }
 
   @call({payableFunction: true})
   donate() {
     // Get who is calling the method and how much $NEAR they attached
-    let donor = near.predecessorAccountId(); 
-    let donationAmount: bigint = near.attachedDeposit() as bigint;
+    let payer = near.predecessorAccountId(); 
+    let paymentAmount: bigint = near.attachedDeposit() as bigint;
 
-    let donatedSoFar = this.donations.get(donor) === null? BigInt(0) : BigInt(this.donations.get(donor) as string)
-    let toTransfer = donationAmount;
+    let paidSoFar = this.payments.get(payer) === null? BigInt(0) : BigInt(this.payments.get(payer) as string)
+    let toTransfer = paymentAmount;
  
     // This is the user's first donation, lets register it, which increases storage
-    if(donatedSoFar == BigInt(0)) {
-      assert(donationAmount > STORAGE_COST, `Attach at least ${STORAGE_COST} yoctoNEAR`);
+    if(paidSoFar == BigInt(0)) {
+      assert(paymentAmount > STORAGE_COST, `Attach at least ${STORAGE_COST} yoctoNEAR`);
 
       // Subtract the storage cost to the amount to transfer
       toTransfer -= STORAGE_COST
     }
 
     // Persist in storage the amount donated so far
-    donatedSoFar += donationAmount
-    this.donations.set(donor, donatedSoFar.toString())
-    near.log(`Thank you ${donor} for donating ${donationAmount}! You donated a total of ${donatedSoFar}`);
+    paidSoFar += paymentAmount
+    this.payments.set(payer, paidSoFar.toString())
+    near.log(`Thank you ${payer} for paying ${paymentAmount}! You paid a total of ${paidSoFar}`);
 
     // Send the money to the beneficiary
-    const promise = near.promiseBatchCreate(this.beneficiary)
+    const promise = near.promiseBatchCreate(this.recipient)
     near.promiseBatchActionTransfer(promise, toTransfer)
 
     // Return the total amount donated so far
-    return donatedSoFar.toString()
+    return paidSoFar.toString()
   }
 
   @call({privateFunction: true})
-  change_beneficiary(beneficiary) {
-    this.beneficiary = beneficiary;
+  change_beneficiary(recipient) {
+    this.recipient = recipient;
   }
 
   @view({})
-  get_beneficiary(){ return this.beneficiary }
+  get_payer(){ return this.recipient }
 
   @view({})
-  number_of_donors() { return this.donations.length }
+  number_of_payers() { return this.payments.length }
 
   @view({})
-  get_donations({from_index = 0, limit = 50}: {from_index:number, limit:number}): Donation[] {
-    let ret:Donation[] = []
-    let end = Math.min(limit, this.donations.length)
+  get_payments({from_index = 0, limit = 50}: {from_index:number, limit:number}): Payment[] {
+    let ret:Payment[] = []
+    let end = Math.min(limit, this.payments.length)
     for(let i=from_index; i<end; i++){
-      const account_id: string = this.donations.keys.get(i) as string
-      const donation: Donation = this.get_donation_for_account({account_id})
-      ret.push(donation)
+      const account_id: string = this.payments.keys.get(i) as string
+      const payment: Payment = this.get_payment_for_account({account_id})
+      ret.push(payment)
     }
     return ret
   }
 
   @view({})
-  get_donation_for_account({account_id}:{account_id:string}): Donation{
-    return new Donation({
+  get_payment_for_account({account_id}:{account_id:string}): Payment{
+    return new Payment({
       account_id,
-      total_amount: this.donations.get(account_id) as string
+      total_amount: this.payments.get(account_id) as string
     })
   }
 }
