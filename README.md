@@ -1,4 +1,4 @@
-# Donation 💸 
+# Paymtns 💸 
 [![](https://img.shields.io/badge/⋈%20Examples-Basics-green)](https://docs.near.org/tutorials/welcome)
 [![](https://img.shields.io/badge/Gitpod-Ready-orange)](https://gitpod.io/#/https://github.com/near-examples/donation-js)
 [![](https://img.shields.io/badge/Contract-js-yellow)](https://docs.near.org/develop/contracts/anatomy)
@@ -6,20 +6,8 @@
 [![](https://img.shields.io/badge/Testing-passing-green)](https://docs.near.org/develop/integrate/frontend)
 
 
-Our Donation example enables to forward money to an account while keeping track of it. It is one of the simplest examples on making a contract receive and send money.
+This is a WiP state of payments on NEAR, leveraging the JS SDK
 
-![](https://docs.near.org/assets/images/donation-7cf65e5e131274fd1ae9aa34bc465bb8.png)
-
-
-# What This Example Shows
-
-1. How to receive and transfer $NEAR on a contract.
-2. How to divide a project into multiple modules.
-3. How to handle the storage costs.
-4. How to handle transaction results.
-5. How to use a `Map`.
-
-<br />
 
 # Quickstart
 
